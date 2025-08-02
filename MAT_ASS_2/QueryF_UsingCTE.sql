@@ -1,0 +1,17 @@
+WITH CitySales AS (
+    SELECT cust.STATE, 
+           cust.CITY, 
+           SUM(sale.QTY * sale.SALEPRICE) AS TOTAL_SALES
+    FROM DWSALE sale
+    JOIN DWCUST cust ON sale.DWCUSTID = cust.DWCUSTID
+    GROUP BY cust.STATE, cust.CITY
+),
+TopCitySales AS (
+    SELECT STATE, CITY, TOTAL_SALES,
+           ROW_NUMBER() OVER (PARTITION BY STATE ORDER BY TOTAL_SALES DESC) AS RANK
+    FROM CitySales
+)
+SELECT STATE, CITY, TOTAL_SALES
+FROM TopCitySales
+WHERE RANK = 1
+ORDER BY STATE ASC;
